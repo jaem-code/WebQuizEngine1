@@ -574,19 +574,10 @@ files:
         }
     }
   learner_created: false
-- name: src/engine/repository/QuizRepository.kt
-  visible: true
-  learner_created: true
 - name: src/engine/service/QuizService.kt
   visible: true
   learner_created: true
 - name: src/engine/dto/ResponseDTO.kt
-  visible: true
-  learner_created: true
-- name: src/engine/dto/QuizDTO.kt
-  visible: true
-  learner_created: true
-- name: src/engine/dto/NewQuizDTO.kt
   visible: true
   learner_created: true
 - name: src/engine/dto/AnswerDTO.kt
@@ -595,9 +586,18 @@ files:
 - name: src/engine/controller/QuizController.kt
   visible: true
   learner_created: true
+- name: src/engine/entity/Quiz.kt
+  visible: true
+  learner_created: true
+- name: src/engine/repository/QuizRepository.kt
+  visible: true
+  learner_created: true
+- name: src/engine/dto/NewQuizDTO.kt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/316/stages/1776/implement#comment
-status: Failed
+status: Solved
 feedback:
-  message: 실행 실패
-  time: "Tue, 08 Aug 2023 06:35:31 UTC"
+  message: 축하합니다!
+  time: "Tue, 08 Aug 2023 10:51:58 UTC"
 record: 1
