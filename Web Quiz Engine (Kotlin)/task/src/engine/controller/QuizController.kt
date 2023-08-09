@@ -9,6 +9,8 @@ import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
@@ -18,8 +20,10 @@ class QuizController(private val quizService: QuizService) {
 
     @PostMapping
     fun createQuiz(
-        @RequestBody newQuiz: NewQuizDTO): ResponseEntity<Quiz> {
-        val quiz = quizService.createQuiz(newQuiz)
+        @RequestBody newQuiz: NewQuizDTO,
+        @AuthenticationPrincipal context: UserDetails
+    ): ResponseEntity<Quiz> {
+        val quiz = quizService.createQuiz(newQuiz, context.username)
         return ResponseEntity.ok(quiz)
     }
 
@@ -44,4 +48,18 @@ class QuizController(private val quizService: QuizService) {
         val quizzes = quizService.getAllQuizzes()
         return ResponseEntity.ok(quizzes)
     }
+
+    @DeleteMapping("/{id}")
+    fun deleteQuiz(
+        @PathVariable id: Int,
+        @AuthenticationPrincipal userDetails: UserDetails // 현재 인증된 사용자 정보를 가져옵니다.
+    ): ResponseEntity<Void> {
+        val result = quizService.deleteQuiz(id, userDetails.username) // userDetails.username에는 이메일 주소가 있어야 합니다.
+        return when(result) {
+            QuizService.QuizDeleteResult.SUCCESS -> ResponseEntity.noContent().build() // 204 NO CONTENT
+            QuizService.QuizDeleteResult.NOT_FOUND -> ResponseEntity.notFound().build() // 404 NOT FOUND
+            QuizService.QuizDeleteResult.UNAUTHORIZED -> ResponseEntity.status(HttpStatus.FORBIDDEN).build() // 403 UNAUTHORIZED
+        }
+    }
+
 }

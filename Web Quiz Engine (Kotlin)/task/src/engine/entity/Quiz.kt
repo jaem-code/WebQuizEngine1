@@ -7,10 +7,9 @@ import org.hibernate.annotations.FetchMode
 
 @Entity
 @Table(name = "quizzes")
-@SequenceGenerator(name = "quizzes_generator", allocationSize = 1)
 data class Quiz(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "quizzes_generator")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false)
     val id: Int? = null,
 
@@ -27,4 +26,7 @@ data class Quiz(
     @JsonIgnore
     val answer: List<Int>? = emptyList(),
 
+    @JsonIgnore
+    @Column(name = "creator_email")
+    val creatorEmail: String? = null
 )

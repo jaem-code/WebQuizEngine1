@@ -789,6 +789,232 @@ files:
         }
     }
   learner_created: false
+- name: src/engine/entity/Quiz.kt
+  visible: true
+  text: |-
+    package engine.entity
+
+    import com.fasterxml.jackson.annotation.JsonIgnore
+    import jakarta.persistence.*
+    import org.hibernate.annotations.Fetch
+    import org.hibernate.annotations.FetchMode
+
+    @Entity
+    @Table(name = "quizzes")
+    data class Quiz(
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(updatable = false)
+        val id: Int? = null,
+
+        val title: String? = null,
+
+        val text: String? = null,
+
+        @Fetch(value = FetchMode.SUBSELECT)
+        @ElementCollection(fetch = FetchType.EAGER)
+        val options: List<String>? = null,
+
+        @Fetch(value = FetchMode.SUBSELECT)
+        @ElementCollection(fetch = FetchType.EAGER)
+        @JsonIgnore
+        val answer: List<Int>? = emptyList(),
+
+    )
+  learner_created: true
+- name: src/engine/dto/ResponseDTO.kt
+  visible: true
+  text: |-
+    package engine.dto
+
+    data class ResponseDTO(val success: Boolean, val feedback: String)
+  learner_created: true
+- name: src/engine/repository/QuizRepository.kt
+  visible: true
+  text: |-
+    package engine.repository
+
+    import engine.entity.Quiz
+    import org.springframework.data.jpa.repository.JpaRepository
+    import org.springframework.stereotype.Repository
+
+    @Repository
+    interface QuizRepository : JpaRepository<Quiz, Int> {
+        fun findQuizById(id: Int): Quiz?
+    }
+  learner_created: true
+- name: src/engine/dto/NewQuizDTO.kt
+  visible: true
+  text: |-
+    package engine.dto
+
+    import com.fasterxml.jackson.annotation.JsonIgnore
+    import jakarta.validation.constraints.NotNull
+    import javax.validation.constraints.NotBlank
+    import javax.validation.constraints.Size
+
+    data class NewQuizDTO(
+        @field:NotBlank val title: String,
+        @field:NotBlank val text: String,
+        @field:Size(min = 2) val options: List<String>,
+        val answer: ArrayList<Int>?
+    )
+  learner_created: true
+- name: src/engine/controller/QuizController.kt
+  visible: true
+  text: |-
+    package engine.controller
+
+    import engine.dto.AnswerDTO
+    import engine.dto.NewQuizDTO
+    import engine.entity.Quiz
+    import engine.dto.ResponseDTO
+    import engine.service.QuizService
+    import jakarta.validation.Valid
+    import org.springframework.data.domain.Page
+    import org.springframework.http.HttpStatus
+    import org.springframework.http.ResponseEntity
+    import org.springframework.web.bind.annotation.*
+    import org.springframework.web.server.ResponseStatusException
+
+    @RestController
+    @RequestMapping("/api/quizzes")
+    class QuizController(private val quizService: QuizService) {
+
+        @PostMapping
+        fun createQuiz(
+            @RequestBody newQuiz: NewQuizDTO): ResponseEntity<Quiz> {
+            val quiz = quizService.createQuiz(newQuiz)
+            return ResponseEntity.ok(quiz)
+        }
+
+        @PostMapping("/{id}/solve")
+        fun solveQuiz(@PathVariable id: Int, @RequestBody answer: AnswerDTO): ResponseEntity<ResponseDTO> {
+            val response = quizService.solveQuiz(id, answer)
+            return ResponseEntity.ok(response)
+        }
+
+        @GetMapping("/{id}")
+        fun getQuiz(@PathVariable id: Int): ResponseEntity<Quiz?> {
+            val quiz = quizService.getQuiz(id)
+            return if (quiz != null) {
+                ResponseEntity.ok(quiz)
+            } else {
+                ResponseEntity.notFound().build()
+            }
+        }
+
+        @GetMapping
+        fun getAllQuizzes(): ResponseEntity<List<Quiz>> {
+            val quizzes = quizService.getAllQuizzes()
+            return ResponseEntity.ok(quizzes)
+        }
+    }
+  learner_created: true
+- name: src/engine/service/QuizService.kt
+  visible: true
+  text: |-
+    package engine.service
+
+    import engine.dto.AnswerDTO
+    import engine.dto.NewQuizDTO
+    import engine.dto.ResponseDTO
+    import engine.entity.Quiz
+    import engine.repository.QuizRepository
+    import org.springframework.http.HttpStatus
+    import org.springframework.stereotype.Service
+    import org.springframework.web.server.ResponseStatusException
+
+    @Service
+    class QuizService(
+        private val quizRepository: QuizRepository
+    ) {
+
+        private val rightAnswerResponse: ResponseDTO =
+            ResponseDTO(true, "Congratulations, you're right!")
+
+        private val wrongAnswerResponse: ResponseDTO =
+            ResponseDTO(false, "Wrong answer! Please, try again.")
+
+
+        fun solveQuiz(id: Int, answer: AnswerDTO): ResponseDTO? {
+            val quiz: Quiz? = getQuiz(id)
+
+            return if (quiz == null) {
+                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found.")
+            } else {
+                if (answer.answer == quiz.answer) rightAnswerResponse else wrongAnswerResponse
+            }
+        }
+
+        fun getQuiz(id: Int): Quiz? = quizRepository.findQuizById(id)
+
+        fun createQuiz(newQuiz: NewQuizDTO): Quiz {
+    //      입력 검증
+            if (newQuiz.title.isNullOrEmpty()) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required.")
+            }
+
+            if (newQuiz.options.isNullOrEmpty()) {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Options cannot be empty.")
+            }
+    //      퀴즈 객체 생성
+            val quiz = Quiz(
+                title = newQuiz.title,
+                text = newQuiz.text,
+                options = newQuiz.options,
+                answer = newQuiz.answer ?: listOf()
+            )
+    //      퀴즈 저장
+            val savedQuiz = quizRepository.save(quiz)
+    //      저장된 퀴즈 반환
+            return Quiz(
+                id = savedQuiz.id,
+                title = savedQuiz.title,
+                text = savedQuiz.text,
+                options = savedQuiz.options
+            )
+        }
+
+        fun getAllQuizzes(): List<Quiz> =
+            quizRepository.findAll()
+
+    }
+  learner_created: true
+- name: src/engine/dto/AnswerDTO.kt
+  visible: true
+  text: |-
+    package engine.dto
+
+    data class AnswerDTO(val answer: List<Int>? = listOf())
+  learner_created: true
+- name: src/engine/entity/User.kt
+  visible: true
+  learner_created: true
+- name: src/engine/dto/UserDTO.kt
+  visible: true
+  learner_created: true
+- name: src/engine/controller/UserController.kt
+  visible: true
+  learner_created: true
+- name: src/engine/repository/UserRepository.kt
+  visible: true
+  learner_created: true
+- name: src/engine/service/UserService.kt
+  visible: true
+  learner_created: true
+- name: src/engine/config/WebSecurityConfig.kt
+  visible: true
+  learner_created: true
+- name: src/engine/service/UserDetailServiceImpl.kt
+  visible: true
+  learner_created: true
+- name: src/engine/service/UserDetailsImpl.kt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/316/stages/1777/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: 축하합니다!
+  time: "Wed, 09 Aug 2023 10:20:39 UTC"
 record: -1
