@@ -6,11 +6,14 @@ import jakarta.persistence.*
 @Table(name = "users")
 data class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
-    @SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
+
+    @Column(unique = true)
     val email: String,
+
     val password: String,
+
     val role: String,
 ) {
     private constructor() : this(null, "", "", "")

@@ -3,7 +3,6 @@ package engine.config
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -22,26 +21,23 @@ class WebSecurityConfig(
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http {
-            securityMatcher("/api/quizzes/**")
-            csrf { disable() }
+            securityMatcher("/api/quizzes/**")  // "/api/quizzes/**" 패턴에 대한 보안 설정
+            csrf { disable() }  // CSRF 보안 비활성화
             authorizeHttpRequests {
-                authorize(anyRequest, hasRole("USER"))
+                authorize(anyRequest, hasRole("USER"))  // 모든 요청에 대해 "USER" 권한이 필요
             }
-            httpBasic { }
+            httpBasic { }  // HTTP Basic 인증 사용
         }
-
-        return http.build()
+        return http.build()  // SecurityFilterChain을 반환
     }
 
     @Bean
-    fun authenticationManager(passwordEncoder: BCryptPasswordEncoder): AuthenticationManager {
-        val authProvider = DaoAuthenticationProvider()
-        authProvider.setUserDetailsService(userDetailsService)
-        authProvider.setPasswordEncoder(passwordEncoder)
-        val providers = listOf<AuthenticationProvider>(authProvider)
-        return ProviderManager(providers)
-    }
+    fun authenticationManager(passwordEncoder: BCryptPasswordEncoder): AuthenticationManager =
+        ProviderManager(DaoAuthenticationProvider().apply {
+            setUserDetailsService(userDetailsService)
+            setPasswordEncoder(passwordEncoder)
+        })
 
     @Bean
-    fun passwordEncoder() = BCryptPasswordEncoder()
+    fun passwordEncoder() = BCryptPasswordEncoder()  // BCryptPasswordEncoder를 사용한 비밀번호 인코더 반환
 }

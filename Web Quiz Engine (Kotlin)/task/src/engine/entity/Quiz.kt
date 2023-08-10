@@ -10,8 +10,7 @@ import org.hibernate.annotations.FetchMode
 data class Quiz(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false)
-    val id: Int? = null,
+    val id: Long? = null,
 
     val title: String? = null,
 

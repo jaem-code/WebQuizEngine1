@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api")
 class UserController(private val userService: UserService) {
 
+    // 사용자 등록
     @PostMapping("/register")
     fun registerUser(@RequestBody @Valid body: UserDTO): ResponseEntity<String> {
-        try {
-            userService.registerUser(body)
-            return ResponseEntity.ok("User registered successfully.")
+        return try {
+            userService.registerUser(body) // 사용자 등록 서비스 호출
+            ResponseEntity.ok("User registered successfully.") // 사용자 등록 성공 시 OK(200) 응답 반환
         } catch (e: UserAlreadyExistsException) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.message)
+            ResponseEntity.badRequest().body(e.message) // 이미 존재하는 사용자일 경우 BAD REQUEST(400) 응답 반환
         }
     }
 }
+

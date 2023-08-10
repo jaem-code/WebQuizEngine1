@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 data class UserDTO(
-
     @field:Email(regexp = ".+@.+\\..+")
     @field:NotBlank
     val email: String,
