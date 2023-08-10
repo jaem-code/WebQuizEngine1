@@ -6,7 +6,8 @@ import jakarta.persistence.*
 @Table(name = "users")
 data class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_generator")
+    @SequenceGenerator(name = "user_seq_generator", sequenceName = "user_sequence", allocationSize = 1)
     val id: Long? = null,
 
     @Column(unique = true)
