@@ -24,7 +24,9 @@ class WebSecurityConfig(
             securityMatcher("/api/quizzes/**")  // "/api/quizzes/**" 패턴에 대한 보안 설정
             csrf { disable() }  // CSRF 보안 비활성화
             authorizeHttpRequests {
-                authorize(anyRequest, hasRole("USER"))  // 모든 요청에 대해 "USER" 권한이 필요
+                authorize("/register", permitAll)
+                authorize(anyRequest, authenticated) // 모든 요청에 대해 "USER" 권한이 필요
+                authorize("/actuator/shutdown", permitAll)  // Allow access without authentication
             }
             httpBasic { }  // HTTP Basic 인증 사용
         }
