@@ -954,43 +954,6 @@ files:
         }
     }
   learner_created: true
-- name: src/engine/service/UserDetailsImpl.kt
-  visible: true
-  text: |-
-    package engine.service
-
-    import engine.entity.User
-    import org.springframework.security.core.GrantedAuthority
-    import org.springframework.security.core.authority.SimpleGrantedAuthority
-    import org.springframework.security.core.userdetails.UserDetails
-
-    class UserDetailsImpl(user: User) : UserDetails {
-
-        private val username: String
-        private val password: String
-        private val rolesAndAuthorities: List<GrantedAuthority>
-
-        init {
-            username = user.email
-            password = user.password
-            rolesAndAuthorities = listOf<GrantedAuthority>(SimpleGrantedAuthority(user.role))
-        }
-
-        override fun getAuthorities() = rolesAndAuthorities
-
-        override fun getPassword() = password
-
-        override fun getUsername() = username
-
-        override fun isAccountNonExpired() = true
-
-        override fun isAccountNonLocked() = true
-
-        override fun isCredentialsNonExpired() = true
-
-        override fun isEnabled() = true
-    }
-  learner_created: true
 - name: src/engine/config/WebSecurityConfig.kt
   visible: true
   text: |-
@@ -1042,29 +1005,6 @@ files:
         fun passwordEncoder() = BCryptPasswordEncoder()
     }
   learner_created: true
-- name: src/engine/service/UserDetailServiceImpl.kt
-  visible: true
-  text: |-
-    package engine.service
-
-    import engine.repository.UserRepository
-    import org.springframework.http.HttpStatus
-    import org.springframework.security.core.userdetails.UserDetails
-    import org.springframework.security.core.userdetails.UserDetailsService
-    import org.springframework.stereotype.Service
-    import org.springframework.web.server.ResponseStatusException
-
-    @Service
-    class UserDetailsServiceImpl(
-        private val userRepository: UserRepository,
-    ) : UserDetailsService {
-        override fun loadUserByUsername(username: String): UserDetails {
-            val user =
-                userRepository.findByEmail(username).orElseGet { throw ResponseStatusException(HttpStatus.NOT_FOUND) }
-            return UserDetailsImpl(user)
-        }
-    }
-  learner_created: true
 - name: src/engine/repository/QuizRepository.kt
   visible: true
   text: |-
@@ -1095,41 +1035,6 @@ files:
         @field:Size(min = 2) val options: List<String>,
         val answer: ArrayList<Int>?
     )
-  learner_created: true
-- name: src/engine/service/UserService.kt
-  visible: true
-  text: |
-    package engine.service
-
-    import engine.dto.UserDTO
-    import engine.entity.User
-    import engine.repository.UserRepository
-    import org.springframework.http.HttpStatus
-    import org.springframework.security.crypto.password.PasswordEncoder
-    import org.springframework.stereotype.Service
-    import org.springframework.web.server.ResponseStatusException
-
-    @Service
-    class UserService(private val userRepository: UserRepository, private val encoder: PasswordEncoder) {
-
-        fun registerUser(body: UserDTO) {
-            val existingUser = userRepository.findByEmail(body.email).orElse(null)
-
-            if (existingUser != null) {
-                throw UserAlreadyExistsException("User with email ${body.email} already exists.")
-            }
-
-            userRepository.save(
-                User(
-                    email = body.email,
-                    password = encoder.encode(body.password),
-                    role = "ROLE_USER"
-                )
-            )
-        }
-    }
-
-    class UserAlreadyExistsException(message: String) : RuntimeException(message)
   learner_created: true
 - name: src/engine/controller/QuizController.kt
   visible: true
@@ -1392,6 +1297,58 @@ files:
 
     )
   learner_created: true
-feedback_link: https://hyperskill.org/projects/316/stages/1778/implement#comment
-status: Unchecked
+- name: src/engine/repository/CompletedQuizRepository.kt
+  visible: true
+  learner_created: true
+- name: src/engine/entity/CompletedQuiz.kt
+  visible: true
+  learner_created: true
+- name: src/engine/service/CustomUserDetailsService.kt
+  visible: true
+  text: |-
+    package engine.service
+
+    import engine.entity.User
+    import org.springframework.security.core.GrantedAuthority
+    import org.springframework.security.core.authority.SimpleGrantedAuthority
+    import org.springframework.security.core.userdetails.UserDetails
+
+    class UserDetailsImpl(user: User) : UserDetails {
+
+        private val username: String
+        private val password: String
+        private val rolesAndAuthorities: List<GrantedAuthority>
+
+        init {
+            username = user.email
+            password = user.password
+            rolesAndAuthorities = listOf<GrantedAuthority>(SimpleGrantedAuthority(user.role))
+        }
+
+        override fun getAuthorities() = rolesAndAuthorities
+
+        override fun getPassword() = password
+
+        override fun getUsername() = username
+
+        override fun isAccountNonExpired() = true
+
+        override fun isAccountNonLocked() = true
+
+        override fun isCredentialsNonExpired() = true
+
+        override fun isEnabled() = true
+    }
+  learner_created: true
+- name: src/engine/config/ApplicationConfig.kt
+  visible: true
+  learner_created: true
+- name: src/engine/config/BCryptConfig.kt
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/24910#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Tue, 15 Aug 2023 07:13:53 UTC"
 record: 6

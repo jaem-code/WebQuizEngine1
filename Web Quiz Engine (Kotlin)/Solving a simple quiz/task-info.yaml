@@ -143,6 +143,15 @@ files:
         }
     }
   learner_created: false
-feedback_link: https://hyperskill.org/projects/316/stages/1773/implement#comment
+- name: src/engine/entity/CompletedQuiz.kt
+  visible: true
+  learner_created: true
+- name: src/engine/repository/CompletedQuizRepository.kt
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/24905#comment
 status: Failed
+feedback:
+  message: Execution failed
+  time: "Mon, 14 Aug 2023 07:03:11 UTC"
 record: 4

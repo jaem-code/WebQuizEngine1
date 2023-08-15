@@ -5,8 +5,9 @@ import org.springframework.boot.runApplication
 
 
 @SpringBootApplication
-class WebQuizEngineApplication
+class WebQuizEngine
 
 fun main(args: Array<String>) {
-    runApplication<WebQuizEngineApplication>(*args)
+    runApplication<WebQuizEngine>(*args)
 }
+

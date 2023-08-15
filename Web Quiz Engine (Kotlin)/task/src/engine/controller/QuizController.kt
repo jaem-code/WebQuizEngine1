@@ -4,64 +4,79 @@ import engine.dto.AnswerDTO
 import engine.dto.NewQuizDTO
 import engine.entity.Quiz
 import engine.dto.ResponseDTO
+import engine.entity.CompletedQuiz
+import engine.entity.User
 import engine.service.QuizService
+import jakarta.validation.Valid
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
+
 
 @RestController
 @RequestMapping("/api/quizzes")
 class QuizController(private val quizService: QuizService) {
 
-    // 새 퀴즈 생성
+    @PostMapping("/{id}/solve")
+    fun solveQuiz(
+        @RequestBody answer: AnswerDTO,
+        @PathVariable id: Int,
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<ResponseDTO> =
+        ResponseEntity.ok()
+            .body(quizService.solveQuiz(id, answer, user) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND))
+
+    @GetMapping("/{id}")
+    fun getQuiz(@PathVariable id: Int): ResponseEntity<Quiz> =
+        ResponseEntity.ok()
+            .body(quizService.getQuiz(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND))
+
     @PostMapping
     fun createQuiz(
-        @RequestBody newQuiz: NewQuizDTO,
-        @AuthenticationPrincipal userForCreate: UserDetails
-    ): ResponseEntity<Quiz> {
-        val quiz = quizService.createQuiz(newQuiz, userForCreate.username)
-        return ResponseEntity.ok(quiz) // 생성된 퀴즈와 함께 OK(200) 응답 반환
-    }
+        @Valid @RequestBody newQuiz: NewQuizDTO,
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<Quiz> =
+        ResponseEntity.ok().body(quizService.createQuiz(newQuiz, user))
 
-    // 퀴즈 풀기
-    @PostMapping("/{id}/solve")
-    fun solveQuiz(@PathVariable id: Int, @RequestBody answer: AnswerDTO): ResponseEntity<ResponseDTO> {
-        val response = quizService.solveQuiz(id, answer)
-        return ResponseEntity.ok(response) // 퀴즈 풀이 결과와 함께 OK(200) 응답 반환
-    }
-
-    // ID로 특정 퀴즈 조회
-    @GetMapping("/{id}")
-    fun getQuiz(@PathVariable id: Int): ResponseEntity<Quiz?> {
-        val quiz = quizService.getQuiz(id)
-        return if (quiz != null) {
-            ResponseEntity.ok(quiz) // 조회된 퀴즈와 함께 OK(200) 응답 반환
-        } else {
-            ResponseEntity.notFound().build() // 퀴즈가 없는 경우 NOT FOUND(404) 응답 반환
-        }
-    }
-
-    // 모든 퀴즈 조회
     @GetMapping
-    fun getAllQuizzes(): ResponseEntity<List<Quiz>> {
-        val quizzes = quizService.getAllQuizzes()
-        return ResponseEntity.ok(quizzes) // 조회된 모든 퀴즈와 함께 OK(200) 응답 반환
-    }
+    fun getAllQuizzes(@RequestParam(defaultValue = "0") page: Int): ResponseEntity<Page<Quiz>> =
+        ResponseEntity.ok().body(quizService.getAllQuizzes(page))
 
-    // 퀴즈 삭제
     @DeleteMapping("/{id}")
     fun deleteQuiz(
         @PathVariable id: Int,
-        @AuthenticationPrincipal userForDetail: UserDetails
-    ): ResponseEntity<Unit> {
-        val result = quizService.deleteQuiz(id.toLong(), userForDetail.username)
-        val statusCode = when (result) {
-            QuizService.QuizDeleteResult.SUCCESS -> HttpStatus.NO_CONTENT // 퀴즈 삭제 성공 시 NO CONTENT(204) 응답 반환
-            QuizService.QuizDeleteResult.NOT_FOUND -> HttpStatus.NOT_FOUND // 퀴즈가 없는 경우 NOT FOUND(404) 응답 반환
-            QuizService.QuizDeleteResult.UNAUTHORIZED -> HttpStatus.FORBIDDEN // 권한이 없는 경우 FORBIDDEN(403) 응답 반환
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<String> {
+        val httpStatus: HttpStatus = quizService.deleteQuiz(id, user)
+        val resString: String = when (httpStatus.name) {
+            "NOT_FOUND"  -> "Quiz not found"
+            "NO_CONTENT" -> "Operation was successfully completed"
+            "FORBIDDEN"  -> "The specified user is not the author of this quiz"
+            else         -> ""
         }
-        return ResponseEntity.status(statusCode).build()
+
+        return ResponseEntity(resString, httpStatus)
     }
+
+    @GetMapping("/completed")
+    fun getAllCompletionsByUser(
+        @RequestParam(defaultValue = "0") page: Int,
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<Page<CompletedQuiz>> =
+        ResponseEntity.ok()
+            .body(
+                quizService
+                    .getAllCompletionsByUser(page, user) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+            )
+
 }

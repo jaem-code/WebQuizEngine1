@@ -7,25 +7,32 @@ import org.hibernate.annotations.FetchMode
 
 @Entity
 @Table(name = "quizzes")
+@SequenceGenerator(name = "quizzes_generator", allocationSize = 1)
 data class Quiz(
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "quizzes_generator")
+    val id: Int? = null,
 
-    val title: String? = null,
-
-    val text: String? = null,
-
-    @Fetch(value = FetchMode.SUBSELECT)
-    @ElementCollection(fetch = FetchType.EAGER)
-    val options: List<String>? = null,
-
-    @Fetch(value = FetchMode.SUBSELECT)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ManyToOne
     @JsonIgnore
-    val answer: List<Int>? = emptyList(),
+    @JoinColumn(referencedColumnName = "id")
+    val creator: User? = null,
 
+    @Column
+    val title: String,
+
+    @Column
+    val text: String,
+
+    @Column
+    @ElementCollection(fetch = FetchType.EAGER)
+    val options: List<String>,
+
+    @Column
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
     @JsonIgnore
-    @Column(name = "creator_email")
-    val creatorEmail: String? = null
+    val answer: List<Int>?
+
 )

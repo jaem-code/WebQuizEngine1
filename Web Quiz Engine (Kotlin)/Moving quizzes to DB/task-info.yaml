@@ -595,7 +595,7 @@ files:
 - name: src/engine/dto/NewQuizDTO.kt
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/316/stages/1776/implement#comment
+feedback_link: https://hyperskill.org/learn/step/24908#comment
 status: Solved
 feedback:
   message: 축하합니다!

@@ -1009,12 +1009,12 @@ files:
 - name: src/engine/service/UserDetailServiceImpl.kt
   visible: true
   learner_created: true
-- name: src/engine/service/UserDetailsImpl.kt
+- name: src/engine/service/CustomUserDetailsService.kt
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/316/stages/1777/implement#comment
+feedback_link: https://hyperskill.org/learn/step/24909#comment
 status: Solved
 feedback:
-  message: 축하합니다!
-  time: "Thu, 10 Aug 2023 07:29:24 UTC"
+  message: Congratulations!
+  time: "Sun, 13 Aug 2023 03:18:34 UTC"
 record: 5
